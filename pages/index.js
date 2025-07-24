@@ -13,8 +13,6 @@ function Home() {
     marginBottom: "0.5em",
   };
 
-  const env_test = process.env.NEXT_PUBLIC_ENV_TEST
-
   return (
     <div style={estiloGamer}>
       <h1 style={estiloTitulo}>Seja bem-vindo ao 🕹️ gamedevnews 🎮!</h1>
@@ -25,8 +23,6 @@ function Home() {
         trilha sonora, programação, matemática, física e game design.
       </p>
       <p>Ainda em construção... 🏗️</p>
-
-      <p>{env_test}</p>
     </div>
   );
 }
