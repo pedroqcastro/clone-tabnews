@@ -7,6 +7,7 @@ async function query(queryObject) {
     database: process.env.POSTGRES_DB,
     user: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
+    ssl: process.env.NODE_ENVIRONMENT === "development" ? false : true,
   });
 
   console.log('Credenciais do banco:',{
@@ -15,6 +16,8 @@ async function query(queryObject) {
     database: process.env.POSTGRES_DB,
     user: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
+    ssl: process.env.NODE_ENVIRONMENT,
+    node_env: process.env.NODE_ENV,
   })
 
   try {
@@ -33,3 +36,4 @@ async function query(queryObject) {
 export default {
   query: query,
 };
+ 
