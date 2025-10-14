@@ -23,6 +23,7 @@ function Home() {
         trilha sonora, programação, matemática, física e game design.
       </p>
       <p>Ainda em construção... 🏗️</p>
+      <footer>Staging Environment</footer>
     </div>
   );
 }
