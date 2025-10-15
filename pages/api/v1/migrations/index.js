@@ -35,10 +35,11 @@ export default async function migrations(request, response) {
         return response.status(200).json(migratedMigrations);
     }
 
+    const databaseName = process.env.POSTGRES_DB;
     const databaseOpenedConnectionsResult = await database.query({
     text: "SELECT count(*) FROM pg_stat_activity WHERE datname = $1",
     values: [databaseName]});
-    
+
     const databaseOpenedConnectionsValue = parseInt(databaseOpenedConnectionsResult.rows[0].count);
 
     console.log("conexoes abertas: " + databaseOpenedConnectionsValue)
