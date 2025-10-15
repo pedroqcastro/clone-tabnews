@@ -6,6 +6,16 @@ export default async function migrations(request, response) {
 
     const dbClient = await database.getNewClient();
 
+    const databaseName = process.env.POSTGRES_DB;
+
+    const databaseOpenedConnectionsResultBefore = await database.query({
+    text: "SELECT count(*) FROM pg_stat_activity WHERE datname = $1",
+    values: [databaseName]});
+
+    const databaseOpenedConnectionsValueBefore = parseInt(databaseOpenedConnectionsResultBefore.rows[0].count);
+
+    console.log("conexoes abertas antes: " + databaseOpenedConnectionsValueBefore)
+
     const defaultMigrationOptions = {
         dbClient: dbClient,
         dryRun: true,
@@ -35,13 +45,14 @@ export default async function migrations(request, response) {
         return response.status(200).json(migratedMigrations);
     }
 
-    const databaseName = process.env.POSTGRES_DB;
-    const databaseOpenedConnectionsResult = await database.query({
+    
+    const databaseOpenedConnectionsResultAfter = await database.query({
     text: "SELECT count(*) FROM pg_stat_activity WHERE datname = $1",
     values: [databaseName]});
 
-    const databaseOpenedConnectionsValue = parseInt(databaseOpenedConnectionsResult.rows[0].count);
+    const databaseOpenedConnectionsValueAfter = parseInt(databaseOpenedConnectionsResultAfter.rows[0].count);
 
-    console.log("conexoes abertas: " + databaseOpenedConnectionsValue)
+    console.log("conexoes abertas depois: " + databaseOpenedConnectionsValueAfter)
+
     return response.status(405).end();
 }
