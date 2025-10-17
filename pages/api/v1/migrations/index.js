@@ -5,6 +5,7 @@ import { join } from "node:path";
 export default async function migrations(request, response) {
 
     const dbClient = await database.getNewClient();
+    const dbClient2 = await database.getNewClient();
 
     const databaseName = process.env.POSTGRES_DB;
 
