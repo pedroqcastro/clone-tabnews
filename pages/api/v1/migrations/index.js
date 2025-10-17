@@ -4,56 +4,47 @@ import { join } from "node:path";
 
 export default async function migrations(request, response) {
 
-    const dbClient = await database.getNewClient();
-    const dbClient2 = await database.getNewClient();
-
-    const databaseName = process.env.POSTGRES_DB;
-
-    const databaseOpenedConnectionsResultBefore = await database.query({
-    text: "SELECT count(*) FROM pg_stat_activity WHERE datname = $1",
-    values: [databaseName]});
-
-    const databaseOpenedConnectionsValueBefore = parseInt(databaseOpenedConnectionsResultBefore.rows[0].count);
-
-    console.log("conexoes abertas antes: " + databaseOpenedConnectionsValueBefore)
-
-    const defaultMigrationOptions = {
-        dbClient: dbClient,
-        dryRun: true,
-        dir: join("infra", "migrations"),
-        direction: "up",
-        verbose: true,
-        migrationsTable: "pgmigrations"
-        }
-
-    if (request.method === 'GET') {
-        const pendingMigrations = await migrationRunner(defaultMigrationOptions);
-        await dbClient.end();
-        return response.status(200).json(pendingMigrations);
+    const allowedMethod = ["GET","POST"];
+    if (!allowedMethod.includes(request.method)) {
+        return response.status(405).json({
+            error: `Method "${request.method}" Not Allowed`,
+        });
     }
 
-    if (request.method === 'POST') {
-        const migratedMigrations = await migrationRunner({
-            ...defaultMigrationOptions,
-            dryRun: false});
-
-        await dbClient.end();    
-
-        if (migratedMigrations.length > 0) {
-            return response.status(201).json(migratedMigrations);
-        }
-
-        return response.status(200).json(migratedMigrations);
-    }
-
+    let dbClient;
     
-    const databaseOpenedConnectionsResultAfter = await database.query({
-    text: "SELECT count(*) FROM pg_stat_activity WHERE datname = $1",
-    values: [databaseName]});
+    try {
+        dbClient = await database.getNewClient();
 
-    const databaseOpenedConnectionsValueAfter = parseInt(databaseOpenedConnectionsResultAfter.rows[0].count);
+        const defaultMigrationOptions = {
+            dbClient: dbClient,
+            dryRun: true,
+            dir: join("infra", "migrations"),
+            direction: "up",
+            verbose: true,
+            migrationsTable: "pgmigrations"
+            }
 
-    console.log("conexoes abertas depois: " + databaseOpenedConnectionsValueAfter)
+        if (request.method === 'GET') {
+            const pendingMigrations = await migrationRunner(defaultMigrationOptions);
+            return response.status(200).json(pendingMigrations);
+        }
 
-    return response.status(405).end();
+        if (request.method === 'POST') {
+            const migratedMigrations = await migrationRunner({
+                ...defaultMigrationOptions,
+                dryRun: false});   
+
+            if (migratedMigrations.length > 0) {
+                return response.status(201).json(migratedMigrations);
+            }
+
+            return response.status(200).json(migratedMigrations);
+        }
+    } catch (error) {
+        console.error(error);
+        throw error;
+    } finally {
+        await dbClient.end();
+    };
 }
